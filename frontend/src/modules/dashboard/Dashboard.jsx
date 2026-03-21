@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useRole } from "../../utils/auth";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-});
+import api from "../../utils/api";
 
 export default function Dashboard() {
   const [summary, setSummary] = useState({
@@ -17,21 +12,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("token");
-  const tenant = localStorage.getItem("tenant") || "modashop";
-  const { admin } = useRole();
-
-  const authHeaders = {
-    Authorization: `Bearer ${token}`,
-    "X-Tenant": tenant
-  };
+  const authUser = JSON.parse(localStorage.getItem("authUser") || "{}");
+  const isAdmin = authUser?.role === "admin";
 
   const loadData = async () => {
     try {
       setLoading(true);
 
       const [summaryRes, latestRes] = await Promise.all([
-        api.get("/sales/summary/today", { headers: authHeaders }),
-        api.get("/sales/latest", { headers: authHeaders })
+        api.get("/sales/summary/today"),
+        api.get("/sales/latest")
       ]);
 
       setSummary(summaryRes.data || {});
@@ -127,7 +117,7 @@ export default function Dashboard() {
               <strong>Promociones</strong>
               <small>Combos y liquidacion</small>
             </button>
-            {admin && (
+            {isAdmin && (
               <button onClick={() => (window.location.href = "/reportes")}>
                 <span>📊</span>
                 <strong>Reportes</strong>

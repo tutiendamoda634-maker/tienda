@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 import "./ClientsPage.css";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-});
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
@@ -27,18 +23,12 @@ export default function ClientsPage() {
   const [payAmount, setPayAmount] = useState("");
 
   const token = localStorage.getItem("token");
-  const tenant = localStorage.getItem("tenant") || "modashop";
-
-  const authHeaders = {
-    Authorization: `Bearer ${token}`,
-    "X-Tenant": tenant
-  };
 
   const fetchClients = async () => {
     try {
       setLoading(true);
       setError("");
-      const { data } = await api.get("/customers", { headers: authHeaders });
+      const { data } = await api.get("/customers");
       setClients(data || []);
       setFiltered(data || []);
     } catch (err) {
@@ -78,7 +68,7 @@ export default function ClientsPage() {
   const handleDelete = async (id) => {
     if (!confirm("¿Seguro que querés eliminar este cliente?")) return;
     try {
-      await api.delete(`/customers/${id}`, { headers: authHeaders });
+      await api.delete(`/customers/${id}`);
       setClients((prev) => prev.filter((c) => c.id !== id));
       setFiltered((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
@@ -110,8 +100,7 @@ export default function ClientsPage() {
       if (editing) {
         const { data } = await api.put(
           `/customers/${editing}`,
-          payload,
-          { headers: authHeaders }
+          payload
         );
         setClients((prev) =>
           prev.map((c) => (c.id === editing ? data : c))
@@ -120,9 +109,7 @@ export default function ClientsPage() {
           prev.map((c) => (c.id === editing ? data : c))
         );
       } else {
-        const { data } = await api.post("/customers", payload, {
-          headers: authHeaders
-        });
+        const { data } = await api.post("/customers", payload);
         setClients((prev) => [data, ...prev]);
         setFiltered((prev) => [data, ...prev]);
       }
@@ -168,8 +155,7 @@ export default function ClientsPage() {
     try {
       const { data } = await api.post(
         `/customers/${accountModal.id}/debt`,
-        { amount: Number(debtAmount) },
-        { headers: authHeaders }
+        { amount: Number(debtAmount) }
       );
 
       // Actualizar balance en la lista
@@ -200,8 +186,7 @@ export default function ClientsPage() {
     try {
       const { data } = await api.post(
         `/customers/${accountModal.id}/pay`,
-        { amount: Number(payAmount) },
-        { headers: authHeaders }
+        { amount: Number(payAmount) }
       );
 
       // Actualizar balance en la lista

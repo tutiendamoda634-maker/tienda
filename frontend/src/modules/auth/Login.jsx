@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 import "./Login.css";
 
 export default function Login() {
@@ -15,16 +15,17 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/login`,
-        { email, password },
-        { headers: { "X-Tenant": tenant } }
+      // Guardamos el tenant ANTES para que api.js lo reconozca automáticamente
+      localStorage.setItem("tenant", tenant);
+
+      const response = await api.post(
+        "/auth/login",
+        { email, password }
       );
 
       console.log("Login ok", response.data);
       localStorage.removeItem("roleOverride");
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("tenant", tenant);
       localStorage.setItem("authUser", JSON.stringify(response.data.user || {}));
       window.location.href = "/dashboard";
     } catch (err) {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 const StoreSettingsContext = createContext();
 
@@ -14,17 +14,6 @@ export function useStoreSettings() {
 export function StoreSettingsProvider({ children }) {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    const tenant = localStorage.getItem("tenant") || "modashop";
-    return {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      "X-Tenant": tenant,
-    };
-  };
 
   const normalizeSettings = (data) => ({
     storeName: data?.storeName || data?.store_name || "Tienda Alex",
@@ -52,9 +41,7 @@ export function StoreSettingsProvider({ children }) {
     try {
       setLoading(true);
 
-      const { data } = await axios.get(`${API_URL}/store/settings`, {
-        headers: getAuthHeaders(),
-      });
+      const { data } = await api.get(`/store/settings`);
 
       const normalized = normalizeSettings(data);
       setSettings(normalized);
@@ -105,9 +92,7 @@ export function StoreSettingsProvider({ children }) {
   };
 
   const updateSettings = async (payload) => {
-    const { data } = await axios.put(`${API_URL}/store/settings`, payload, {
-      headers: getAuthHeaders(),
-    });
+    const { data } = await api.put(`/store/settings`, payload);
 
     const normalized = normalizeSettings(data);
     setSettings(normalized);

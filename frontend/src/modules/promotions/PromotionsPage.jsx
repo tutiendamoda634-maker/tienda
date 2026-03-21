@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -36,8 +36,8 @@ export default function PromotionsPage() {
     try {
       setLoading(true);
       const [promoRes, productRes] = await Promise.all([
-        axios.get(`${API_URL}/promotions`),
-        axios.get(`${API_URL}/products`),
+        api.get(`/promotions`),
+        api.get(`/products`),
       ]);
       setPromotions(promoRes.data || []);
       setProducts(productRes.data || []);
@@ -96,7 +96,7 @@ export default function PromotionsPage() {
           })),
       };
 
-      const { data } = await axios.post(`${API_URL}/promotions`, payload);
+      const { data } = await api.post(`/promotions`, payload);
       setPromotions((prev) => [data, ...prev]);
       setForm(emptyForm);
       setMsg("Promocion creada");
@@ -110,7 +110,7 @@ export default function PromotionsPage() {
 
   const togglePromotion = async (id) => {
     try {
-      const { data } = await axios.patch(`${API_URL}/promotions/${id}/toggle`);
+      const { data } = await api.patch(`/promotions/${id}/toggle`);
       setPromotions((prev) => prev.map((item) => (item.id === id ? data : item)));
     } catch (err) {
       console.error("PATCH /promotions/:id/toggle", err?.response?.data || err);
@@ -121,7 +121,7 @@ export default function PromotionsPage() {
   const deletePromotion = async (id) => {
     if (!confirm("Eliminar promocion?")) return;
     try {
-      await axios.delete(`${API_URL}/promotions/${id}`);
+      await api.delete(`/promotions/${id}`);
       setPromotions((prev) => prev.filter((item) => item.id !== id));
       setMsg("Promocion eliminada");
     } catch (err) {

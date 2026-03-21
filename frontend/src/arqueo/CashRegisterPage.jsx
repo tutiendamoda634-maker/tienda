@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-});
+import api from "../utils/api";
 
 const PAYMENT_METHODS = {
   cash: { label: "Efectivo", icon: "💵", color: "#10b981" },

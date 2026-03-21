@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const PROVIDERS_BASES = ["/providers", "/store/providers", "/api/providers", "/api/store/providers"];
@@ -107,15 +107,14 @@ export default function ProvidersPage() {
     localStorage.setItem(getLocalKey(), JSON.stringify(ensureProviderArray(next)));
 
   const requestProviders = async (method, suffix = "", payload) => {
-    const headers = getAuthHeaders();
-    let lastError = null;
+        let lastError = null;
     for (const base of PROVIDERS_BASES) {
       try {
         const url = `${API_URL}${base}${suffix}`;
-        if (method === "get")    return await axios.get(url, { headers });
-        if (method === "post")   return await axios.post(url, payload, { headers });
-        if (method === "put")    return await axios.put(url, payload, { headers });
-        if (method === "delete") return await axios.delete(url, { headers });
+        if (method === "get")    return await api.get(url);
+        if (method === "post")   return await api.post(url, payload);
+        if (method === "put")    return await api.put(url, payload);
+        if (method === "delete") return await api.delete(url);
       } catch (err) {
         lastError = err;
         if (err?.response?.status !== 404) break;
@@ -202,7 +201,7 @@ export default function ProvidersPage() {
   const loadTrips = async () => {
     try {
       setTripsLoading(true);
-      const { data } = await axios.get(`${API_URL}/providers/trips`, { headers: getAuthHeaders() });
+      const { data } = await api.get(`/providers/trips`);
       setTrips(ensureTripArray(data));
     } catch (err) {
       console.error("GET /providers/trips", err);
@@ -236,11 +235,11 @@ export default function ProvidersPage() {
         notes: tripForm.notes,
       };
       if (editingTrip) {
-        const { data } = await axios.put(`${API_URL}/providers/trips/${editingTrip}`, payload, { headers: getAuthHeaders() });
+        const { data } = await api.put(`/providers/trips/${editingTrip}`, payload);
         setTrips((prev) => prev.map((t) => t.id === editingTrip ? normalizeTrip(data) : t));
         setMsg("Viaje actualizado");
       } else {
-        const { data } = await axios.post(`${API_URL}/providers/trips`, payload, { headers: getAuthHeaders() });
+        const { data } = await api.post(`/providers/trips`, payload);
         setTrips((prev) => [normalizeTrip(data), ...prev]);
         setMsg("Viaje registrado");
       }
@@ -253,7 +252,7 @@ export default function ProvidersPage() {
   const removeTrip = async (id) => {
     if (!confirm("¿Eliminar este viaje?")) return;
     try {
-      await axios.delete(`${API_URL}/providers/trips/${id}`, { headers: getAuthHeaders() });
+      await api.delete(`/providers/trips/${id}`);
       setTrips((prev) => prev.filter((t) => t.id !== id));
       setMsg("Viaje eliminado");
     } catch { setMsg("No se pudo eliminar el viaje"); }

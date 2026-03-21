@@ -1,9 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-});
+import api from "../../utils/api";
 
 const PAYMENT_METHODS = [
   { value: "cash", label: "Efectivo", icon: "💵" },
@@ -80,12 +76,6 @@ export default function PosPage() {
   const [entrega, setEntrega] = useState("");
 
   const token = localStorage.getItem("token");
-  const tenant = localStorage.getItem("tenant") || "modashop";
-
-  const authHeaders = {
-    Authorization: `Bearer ${token}`,
-    "X-Tenant": tenant
-  };
 
   // ===== CARGA DE DATOS =====
 
@@ -93,7 +83,7 @@ export default function PosPage() {
     try {
       setLoadingProducts(true);
       setError("");
-      const { data } = await api.get("/products", { headers: authHeaders });
+      const { data } = await api.get("/products");
       setProducts(data || []);
     } catch (err) {
       console.error("Error cargando productos POS", err);
@@ -105,7 +95,7 @@ export default function PosPage() {
 
   const fetchCustomers = async () => {
     try {
-      const { data } = await api.get("/customers", { headers: authHeaders });
+      const { data } = await api.get("/customers");
       setCustomers(data || []);
     } catch (err) {
       console.error("Error cargando clientes POS", err);
@@ -114,7 +104,7 @@ export default function PosPage() {
 
   const fetchPromotions = async () => {
     try {
-      const { data } = await api.get("/promotions", { headers: authHeaders });
+      const { data } = await api.get("/promotions");
       // Solo mostrar las marcadas como activas
       setPromotions((data || []).filter(p => p.active === 1 || p.active === true));
     } catch (err) {
@@ -427,8 +417,7 @@ export default function PosPage() {
           customerId: selectedCustomer ? selectedCustomer.id : null,
           entrega: selectedCustomer ? entregaValue : null,
           debtToAccount: debtAmount
-        },
-        { headers: authHeaders }
+        }
       );
 
       const paymentsSummary = effectivePayments.map(p => 

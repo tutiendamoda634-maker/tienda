@@ -13,12 +13,20 @@ export async function tenantResolver(req, res, next) {
 
     const corePool = getCorePool()
     const [rows] = await corePool.query(
-      "SELECT * FROM tenants WHERE slug = ? AND status = 'active' LIMIT 1",
+      "SELECT * FROM tenants WHERE slug = ? AND status IN ('active', 'pending') LIMIT 1",
       [slug]
     )
     const tenant = rows[0]
     if (!tenant) {
       return res.status(404).json({ error: 'Tenant no encontrado' })
+    }
+
+    // Check if tenant has database configured
+    if (!tenant.db_host || !tenant.db_name) {
+      return res.status(503).json({
+        error: 'Tienda en proceso de configuración',
+        code: 'TENANT_NOT_PROVISIONED'
+      })
     }
 
     req.tenant = tenant

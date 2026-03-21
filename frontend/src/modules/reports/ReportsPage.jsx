@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
-});
+import api from "../../utils/api";
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
@@ -44,13 +40,12 @@ export default function ReportsPage() {
       setLoading(true);
       setError("");
 
-      const headers = getAuthHeaders();
-
+      
       const [summaryRes, dailyRes, topRes, investRes] = await Promise.all([
         api.get("/reports/summary", { params: { from, to }, headers }),
         api.get("/reports/daily",   { params: { from, to }, headers }),
         api.get("/reports/top-products", { params: { from, to }, headers }),
-        api.get("/reports/investment", { headers }).catch(() => ({ data: null })),
+        api.get("/reports/investment").catch(() => ({ data: null })),
       ]);
 
       setSummary(summaryRes.data);

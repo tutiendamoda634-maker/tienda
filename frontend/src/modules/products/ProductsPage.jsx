@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
- 
-const API_URL = import.meta.env.VITE_API_URL;
+import api from "../../utils/api";
 
 const PRODUCT_CATEGORIES = [
   { value: "varon", label: "Varon" },
@@ -79,7 +77,7 @@ const ProductsPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${API_URL}/products`);
+      const { data } = await api.get(`/products`);
       setItems(data || []);
     } catch (e) {
       console.error("GET /products error", e);
@@ -155,11 +153,11 @@ const ProductsPage = () => {
       };
 
       if (editing) {
-        const { data } = await axios.put(`${API_URL}/products/${editing}`, payload);
+        const { data } = await api.put(`/products/${editing}`, payload);
         setItems((prev) => prev.map((p) => (p.id === editing ? data : p)));
         setMsg("Producto actualizado");
       } else {
-        const { data } = await axios.post(`${API_URL}/products`, payload);
+        const { data } = await api.post(`/products`, payload);
         setItems((prev) => [data, ...prev]);
         setMsg("Producto agregado");
       }
@@ -177,7 +175,7 @@ const ProductsPage = () => {
   const onDelete = async (id) => {
     if (!confirm("Eliminar este producto?")) return;
     try {
-      await axios.delete(`${API_URL}/products/${id}`);
+      await api.delete(`/products/${id}`);
       setItems((prev) => prev.filter((it) => it.id !== id));
       setMsg("Producto eliminado");
     } catch (e) {
