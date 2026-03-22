@@ -26,11 +26,22 @@ Copy-Item "backend\.env.example" "$deployDir\.env.example"
 New-Item -ItemType Directory -Path "$deployDir\frontend" | Out-Null
 Copy-Item "frontend\dist" "$deployDir\frontend\dist" -Recurse
 
-# 4. Crear ZIP
-Write-Host "`n[4/4] Creando ZIP..." -ForegroundColor Yellow
+# 4. Crear ZIP con forward slashes (compatible con Linux/Hostinger)
+Write-Host "`n[4/4] Creando ZIP compatible con Linux..." -ForegroundColor Yellow
 $zipName = "hostinger-deploy.zip"
-if (Test-Path $zipName) { Remove-Item $zipName }
-Compress-Archive -Path "$deployDir\*" -DestinationPath $zipName
+$zipPath = [System.IO.Path]::GetFullPath($zipName)
+if (Test-Path $zipPath) { Remove-Item $zipPath }
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$deployDirFull = [System.IO.Path]::GetFullPath($deployDir)
+$zip = [System.IO.Compression.ZipFile]::Open($zipPath, 'Create')
+
+Get-ChildItem -Path $deployDirFull -Recurse -File | ForEach-Object {
+    $relativePath = $_.FullName.Substring($deployDirFull.Length + 1).Replace('\', '/')
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $relativePath) | Out-Null
+}
+
+$zip.Dispose()
 
 Write-Host "`n=== LISTO ===" -ForegroundColor Green
 Write-Host "Archivo creado: $zipName" -ForegroundColor Green
