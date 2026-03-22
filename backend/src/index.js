@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -102,7 +103,6 @@ app.use('/api/promotions', tenantMiddleware, promotionsRoutes);
 
 // ── Servir frontend en producción ──────────────────────────────────
 // Auto-detecta la estructura: deploy plano (Hostinger) vs monorepo local (dev)
-import { existsSync } from 'fs';
 const hostingerPath = path.join(__dirname, '../frontend/dist');   // deploy plano
 const devPath = path.join(__dirname, '../../frontend/dist');       // monorepo local
 const frontendDist = existsSync(hostingerPath) ? hostingerPath : devPath;
